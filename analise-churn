@@ -1,0 +1,38 @@
+-- 1. CRIAÇÃO DA TABELA E INSERÇÃO DOS DADOS
+CREATE TABLE assinaturas (
+    cliente_id INT,
+    nome VARCHAR(50),
+    data_cadastro DATE,
+    ultima_atividade DATE,
+    valor_mensal DECIMAL(10,2)
+);
+
+INSERT INTO assinaturas (cliente_id, nome, data_cadastro, ultima_atividade, valor_mensal) VALUES
+(101, 'Ana Silva', '2023-01-15', '2026-07-25', 99.90),
+(102, 'Carlos Souza', '2023-03-10', '2026-05-10', 149.90),
+(103, 'Mariana Costa', '2023-06-20', '2026-06-28', 49.90),
+(104, 'Lucas Pereira', '2024-01-05', '2026-07-27', 199.90),
+(105, 'Fernanda Lima', '2023-11-12', '2026-04-01', 99.90);
+
+-- 2. ANÁLISE DE CHURN COM CTE E CASE WHEN
+WITH CalculoInatividade AS (
+    SELECT 
+        cliente_id,
+        nome,
+        valor_mensal,
+        ultima_atividade,
+        ('2026-07-28'::DATE - ultima_atividade) AS dias_sem_acesso
+    FROM assinaturas
+)
+SELECT 
+    cliente_id,
+    nome,
+    valor_mensal,
+    dias_sem_acesso,
+    CASE 
+        WHEN dias_sem_acesso <= 30 THEN '1. Ativo'
+        WHEN dias_sem_acesso BETWEEN 31 AND 60 THEN '2. Risco Moderado'
+        ELSE '3. Alto Risco / Churn'
+    END AS status_churn
+FROM CalculoInatividade
+ORDER BY dias_sem_acesso DESC;
